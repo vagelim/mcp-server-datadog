@@ -29,13 +29,17 @@ export const createLogsToolHandlers = (
       request.params.arguments,
     )
 
+    // Convert epoch seconds to Date objects
+    const fromDate = new Date(from * 1000)
+    const toDate = new Date(to * 1000)
+
     const response = await apiInstance.listLogs({
       body: {
         filter: {
           query,
-          // `from` and `to` are in epoch seconds, but the Datadog API expects milliseconds
-          from: `${from * 1000}`,
-          to: `${to * 1000}`,
+          // Use ISO string format which is supported by Datadog API
+          from: fromDate.toISOString(),
+          to: toDate.toISOString(),
         },
         page: {
           limit,
@@ -63,13 +67,17 @@ export const createLogsToolHandlers = (
       request.params.arguments,
     )
 
+    // Convert epoch seconds to Date objects
+    const fromDate = new Date(from * 1000)
+    const toDate = new Date(to * 1000)
+
     const response = await apiInstance.listLogs({
       body: {
         filter: {
           query,
-          // `from` and `to` are in epoch seconds, but the Datadog API expects milliseconds
-          from: `${from * 1000}`,
-          to: `${to * 1000}`,
+          // Use ISO string format which is supported by Datadog API
+          from: fromDate.toISOString(),
+          to: toDate.toISOString(),
         },
         page: {
           limit,
