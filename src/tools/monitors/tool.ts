@@ -1,11 +1,11 @@
 import { ExtendedTool, ToolHandlers } from '../../utils/types'
 import { v1 } from '@datadog/datadog-api-client'
 import { createToolSchema } from '../../utils/tool'
-import { GetMonitorsZodSchema } from './schema'
+import { GetMonitorsZodSchema, CreateMonitorZodSchema } from './schema'
 import { unreachable } from '../../utils/helper'
 import { UnparsedObject } from '@datadog/datadog-api-client/dist/packages/datadog-api-client-common/util.js'
 
-type MonitorsToolName = 'get_monitors'
+type MonitorsToolName = 'get_monitors' | 'create_monitor'
 type MonitorsTool = ExtendedTool<MonitorsToolName>
 
 export const MONITORS_TOOLS: MonitorsTool[] = [
@@ -13,6 +13,11 @@ export const MONITORS_TOOLS: MonitorsTool[] = [
     GetMonitorsZodSchema,
     'get_monitors',
     'Get monitors status from Datadog',
+  ),
+  createToolSchema(
+    CreateMonitorZodSchema,
+    'create_monitor',
+    'Create a new monitor in Datadog',
   ),
 ] as const
 
@@ -104,6 +109,61 @@ export const createMonitorsToolHandlers = (
           {
             type: 'text',
             text: `Summary of monitors: ${JSON.stringify(summary)}`,
+          },
+        ],
+      }
+    },
+
+    create_monitor: async (request) => {
+      const { type, query, name, message, tags, priority, options } =
+        CreateMonitorZodSchema.parse(request.params.arguments)
+
+      const body: v1.Monitor = {
+        type: type as v1.MonitorType,
+        query,
+        name,
+        message,
+        tags,
+        priority,
+        options: options
+          ? {
+              thresholds: options.thresholds
+                ? {
+                    critical: options.thresholds.critical,
+                    warning: options.thresholds.warning,
+                    ok: options.thresholds.ok,
+                    criticalRecovery: options.thresholds.criticalRecovery,
+                    warningRecovery: options.thresholds.warningRecovery,
+                  }
+                : undefined,
+              notifyNoData: options.notifyNoData,
+              noDataTimeframe: options.noDataTimeframe,
+              notifyAudit: options.notifyAudit,
+              timeoutH: options.timeoutH,
+              renotifyInterval: options.renotifyInterval,
+              evaluationDelay: options.evaluationDelay,
+              newGroupDelay: options.newGroupDelay,
+              requireFullWindow: options.requireFullWindow,
+              includeTags: options.includeTags,
+            }
+          : undefined,
+      }
+
+      const response = await apiInstance.createMonitor({ body })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Monitor created successfully: ${JSON.stringify({
+              id: response.id,
+              name: response.name,
+              type: response.type,
+              query: response.query,
+              status: response.overallState,
+              tags: response.tags,
+              created: response.created,
+            })}`,
           },
         ],
       }
