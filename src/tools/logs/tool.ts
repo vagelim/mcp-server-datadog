@@ -62,9 +62,9 @@ export const createLogsToolHandlers = (
       storageTier?: string
     } = {
       query,
-      // `from` and `to` are in epoch seconds, but the Datadog API expects milliseconds
-      from: `${from * 1000}`,
-      to: `${to * 1000}`,
+      // `from` and `to` are in epoch seconds; Datadog API expects ISO 8601 strings
+      from: new Date(from * 1000).toISOString(),
+      to: new Date(to * 1000).toISOString(),
     }
 
     // Add storageTier to filter if configured
@@ -109,9 +109,9 @@ export const createLogsToolHandlers = (
       storageTier?: string
     } = {
       query,
-      // `from` and `to` are in epoch seconds, but the Datadog API expects milliseconds
-      from: `${from * 1000}`,
-      to: `${to * 1000}`,
+      // `from` and `to` are in epoch seconds; Datadog API expects ISO 8601 strings
+      from: new Date(from * 1000).toISOString(),
+      to: new Date(to * 1000).toISOString(),
     }
 
     // Add storageTier to filter if configured
